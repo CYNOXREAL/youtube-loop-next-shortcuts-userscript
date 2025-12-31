@@ -52,7 +52,7 @@ Perfect for users who want looping and quick navigation without installing large
 ## 📥 Installation
 1. Install a userscript manager (recommended: **[Tampermonkey](https://www.tampermonkey.net/)**).
 2. Click below to install the script directly:  
-   👉 **[Install YouTube Auto Loop + Next Video](./youtube-auto-loop.user.js)**
+   👉 **[Install YouTube Auto Loop + Next Video](./v1.js)**
 3. Your userscript manager will open an installation window — click **Install**.
 4. Done — the script will run automatically on YouTube.
 
