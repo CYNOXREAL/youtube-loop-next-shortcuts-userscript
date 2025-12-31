@@ -2,8 +2,8 @@
 // @name         YouTube Auto Loop + Next Video (No Enhancer)
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=youtube.com
 // @namespace    https://github.com/CYNOXREAL
-// @version      1.0
-// @description  Auto loop videos and add R/N shortcuts without Enhancer for YouTube
+// @version      1.1
+// @description  Auto loop videos and add R/N shortcuts without Enhancer for YouTube, with user override memory
 // @author       CYNOXREAL
 // @match        https://www.youtube.com/*
 // @grant        none
@@ -12,7 +12,8 @@
 (function() {
     'use strict';
 
-    let lastVideo = null;
+    let lastVideoSrc = null;
+    let userDisabledLoop = false;
 
     function showToast(text) {
         let toast = document.createElement('div');
@@ -36,56 +37,61 @@
         `;
         document.body.appendChild(toast);
 
-        requestAnimationFrame(() => {
-            toast.style.opacity = '1';
-        });
-
+        requestAnimationFrame(() => toast.style.opacity = '1');
         setTimeout(() => {
             toast.style.opacity = '0';
             setTimeout(() => toast.remove(), 300);
         }, 1200);
     }
 
-    function enableLoop(video) {
-        if (video && video !== lastVideo) {
-            lastVideo = video;
-            video.loop = true;
-            showToast('Loop ON');
+    function autoLoop(video) {
+        const src = video.currentSrc;
+        if (!src) return;
+
+        // new video detected
+        if (src !== lastVideoSrc) {
+            lastVideoSrc = src;
+
+            // auto-loop only if user didn't disable it
+            if (!userDisabledLoop) {
+                video.loop = true;
+                showToast("Loop ON");
+            }
         }
     }
 
     function toggleLoop() {
         const video = document.querySelector('video');
-        if (video) {
-            video.loop = !video.loop;
-            showToast(video.loop ? 'Loop ON' : 'Loop OFF');
-        }
+        if (!video) return;
+
+        video.loop = !video.loop;
+
+        // remember user choice
+        userDisabledLoop = !video.loop;
+
+        showToast(video.loop ? "Loop ON" : "Loop OFF");
     }
 
     function clickNextVideo() {
         const nextBtn = document.querySelector('.ytp-next-button');
         if (nextBtn) {
             nextBtn.click();
-            showToast('Next Video');
+            showToast("Next Video");
         }
     }
 
     document.addEventListener('keydown', (e) => {
         if (!e.target.matches('input, textarea')) {
-            if (e.key.toLowerCase() === 'r') {
-                toggleLoop();
-            }
-            if (e.key.toLowerCase() === 'n') {
-                clickNextVideo();
-            }
+            if (e.key.toLowerCase() === 'r') toggleLoop();
+            if (e.key.toLowerCase() === 'n') clickNextVideo();
         }
     });
 
+    // detect new videos
     const observer = new MutationObserver(() => {
         const video = document.querySelector('video');
-        if (video) {
-            enableLoop(video);
-        }
+        if (video) autoLoop(video);
     });
+
     observer.observe(document.body, { childList: true, subtree: true });
 })();
